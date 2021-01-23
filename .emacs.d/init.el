@@ -33,5 +33,80 @@
 
 ;; gitがインストールされている場合、magitを読み込む
 (when (executable-find "git")
-  (require 'magit nil t))
+  (require 'magit nil))
+
+;;
+;; キーバインド関連
+;;
+
+;; C-mで改行＋インデントを行う
+(global-set-key (kbd "C-m") 'newline-and-indent)
+
+;; C-tでウィンドウを切り替える。初期値はtranspose-chars
+(global-set-key (kbd "C-t") 'other-window)
+
+;; C-hを<DEL>に置き換え、"C-x ?"にヘルプコマンドを入れ替える
+(define-key key-translation-map (kbd "C-h") (kbd "<DEL>"))
+(define-key global-map (kbd "C-x ?") 'help-command)
+
+;;
+;; フレーム関連
+;;
+
+;; カラム番号も表示
+(column-number-mode t)
+;; ファイルサイズを表示
+(size-indication-mode t)
+;; タイトルバーにファイルのフルパスを表示
+(setq frame-title-format "%f")
+;; 行番号を左側に常に表示p
+(global-linum-mode t)
+
+;;
+;; インデント関連
+;;
+
+;; TAB幅
+(setq-default tab-width 4)
+;; インデントにTAB文字を使用しない
+(setq-default indent-tabs-mode nil)
+
+;;
+;; フォント関連
+;;
+
+;; AsciiフォントをRictyに設定
+(set-face-attribute 'default nil
+                    :family "Ricty"
+                    :height 120)
+
+;; 日本語フォントをRictyに設定
+(set-fontset-font
+ nil 'japanese-jisx0208
+ (font-spec :family "Ricty"))
+
+;; Notoフォントの横幅を調整
+(add-to-list 'face-font-rescale-alist '("Ricty" . 1.1))
+
+;; 現在行のハイライト
+(defface my-hl-line-face
+  ;; 背景がdarkならば背景色を紺に
+  '((((class color)	(background dark))
+      (:background "NavyBlue" t))
+     ;;背景がlightならば背景色を青に
+     (((class color) (background light))
+      (:background "LightSkyBule" t))
+     (t (:bold t)))
+  "hl-line's my face")
+(setq hl-line-face 'my-hl-line-face)
+(global-hl-line-mode t)
+
+;; paren-mode：対応する括弧を強調して表示する
+(setq show-paren-delay 0.1) ;
+(show-paren-mode t)
+;; parenのスタイル：expressionは括弧ないも強調表示
+(setq show-paren-style 'expression)
+;; フェイスを変更する
+(set-face-background 'show-paren-match-face nil)
+(set-face-under-p 'show-paren-match-face "darkgreen")
 
