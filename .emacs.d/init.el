@@ -1,3 +1,4 @@
+
 ;; load-pathを追加する関数を定義
 (defun add-to-load-path (&rest paths)
   (let (path)
@@ -11,9 +12,6 @@
 ;; 引数のディレクトリとそのサブディレクトリをload-pathに追加
 (add-to-load-path "elisp" "conf" "public_repos")
 
-;; "conf"ディレクトリ配下読み込み
-;; (load "init-perl")
-
 ;; カスタムファイル(自動で書き込まれるファイル)を別ファイルにする
 (setq custom-file (locate-user-emacs-file "custom.el"))
 ;; カスタムファイルが存在しない場合は作成する
@@ -22,18 +20,12 @@
 ;; カスタムファイルを読み込む
 (load custom-file)
 
-;; init-loader.el(分割ファイル自動読み込み拡張機能)
-;;  1.)2桁の数字から始まる設定ファイルを数字の順番から読み込む(00-env.el,10-perl.el)
-;;  2.)Meadow(Windows)の場合、「meadow」から始まる名前のファイルを読み込む(meadow-*.el)
-;;  3.)CocoEmacs(Mac)の場合、「cocoa-emacs」から始まる名前のファイルを読み込む(cocoa-emacs-*.el)
-;; 設定ファイルの読み込みはerrorが出ても中断されず、スキップされ次のファイルの読み込みが始まる
-;; >読み込んだログは「*Message*」バッファに蓄積される
-(require 'init-loader')
-(init-loader-load "~/.emacs.d/conf")
-
-;; gitがインストールされている場合、magitを読み込む
-(when (executable-find "git")
-  (require 'magit nil))
+;package.elを有効化
+(require 'package)
+;;パッケージリポジトリ
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
+(package-initialize) ;インストール済みのElispを読み込む
 
 ;;
 ;; キーバインド関連
@@ -78,7 +70,7 @@
 ;; AsciiフォントをRictyに設定
 (set-face-attribute 'default nil
                     :family "Ricty"
-                    :height 120)
+		            :height 110)
 
 ;; 日本語フォントをRictyに設定
 (set-fontset-font
@@ -102,11 +94,49 @@
 (global-hl-line-mode t)
 
 ;; paren-mode：対応する括弧を強調して表示する
-(setq show-paren-delay 0.1) ;
+(setq show-paren-delay 0.1)
 (show-paren-mode t)
-;; parenのスタイル：expressionは括弧ないも強調表示
+;; parenのスタイル：expressionは括弧内も強調表示
 (setq show-paren-style 'expression)
-;; フェイスを変更する
-(set-face-background 'show-paren-match-face nil)
-(set-face-under-p 'show-paren-match-face "darkgreen")
 
+;;
+;; フック関連
+;;
+
+;; #!から始まる場合、+x権限で保存する
+(add-hook 'after-save-hook
+          'executable-make-buffer-file-executable-if-script-p)
+
+;; emacs-lisp-mode-hook用の関数を定義＆セット
+(defun elisp-mode-hooks ()
+  "lisp-mode-hooks"
+  (when (require 'eldoc nil t)
+    (setq eldoc-idle-delay 0.2)
+    (setq eldoc-echo-area-use-multiline-p t)
+    (turn-on-eldoc-mode)))
+(add-hook 'emacs-lisp-mode-hook 'elisp-mode-hooks)
+
+
+;; themaを読み込み
+(load-theme 'zenburn t)
+
+;; Helm
+(require 'helm-config)
+
+;; auto-completeの設定
+(when	(require 'auto-complete-config nil t)
+  (define-key ac-mode-map (kbd "M-TAB") 'auto-complete)
+  (ac-config-default)
+  (setq ac-use-menu-map t)
+  (setq ac-ignore-case nil))
+
+;; undo-treeを読み込み
+(require 'undo-tree)
+(global-undo-tree-mode t)
+
+;; wgrepの設定
+(require 'wgrep nil t)
+
+;; gitがインストールされている場合、magitを読み込む
+(when (executable-find "git")
+  (require 'magit nil))
